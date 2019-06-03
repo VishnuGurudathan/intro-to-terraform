@@ -14,15 +14,22 @@ provider "aws" {
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
+# LOCAL VARIABLES
+# ---------------------------------------------------------------------------------------------------------------------
+locals {
+    local_tags = {
+	Name   = "Terraform Testing"
+		  }
+}
+# ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY A SINGLE EC2 INSTANCE
 # ---------------------------------------------------------------------------------------------------------------------
 resource "aws_instance" "instance" {
   ami = "${data.aws_ami.ubuntu.id}"
   instance_type = "${var.instance_type}"
   vpc_security_group_ids = ["${aws_security_group.security-group.id}"]
-#   tags {
-#     Name = "terraform-example"
-#   }
+  #tags = "${local.local_tags}"
+  tags = "${merge(local.local_tags, var.tags)}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -39,4 +46,19 @@ resource "aws_security_group" "security-group" {
     protocol = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# EBS ATTACHMENT
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "aws_volume_attachment" "ebs_att" {
+  device_name = "/dev/sdh"
+  volume_id   = "${aws_ebs_volume.ebs.id}"
+  instance_id = "${aws_instance.instance.id}"
+}
+
+resource "aws_ebs_volume" "ebs" {
+  availability_zone = "${var.aws_region}"
+  size              = 10
 }

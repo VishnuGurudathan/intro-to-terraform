@@ -27,5 +27,8 @@ variable "server_port" {
 
 variable "tags" {
   description = "A mapping of tags to assign to the resource"
-  default     = {}
+  default     = {
+      Project = "Testing"
+      Environment = "Test"
+  }
 }
